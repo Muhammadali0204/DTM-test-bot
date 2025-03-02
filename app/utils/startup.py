@@ -18,8 +18,7 @@ async def set_command(bot : Bot):
     await bot.set_my_commands(
         commands=[
             types.BotCommand(command='start', description='Botni ishga tushurish'),
-            types.BotCommand(command='menu', description='Bosh menu'),
-            types.BotCommand(command='admin', description='Adminga murojaat')
+            types.BotCommand(command='menu', description='Bosh menu')
         ]
     )
 
