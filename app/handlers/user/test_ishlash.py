@@ -18,9 +18,10 @@ from app.utils.enums import TestTuri, TestTuriButtons, UmumiyButtons, UserMenuBu
 
 
 router = Router()
+
 router_none = Router()
-router_none.message(StateFilter(None))
-router_none.callback_query(StateFilter(None))
+router_none.message.filter(StateFilter(None))
+router_none.callback_query.filter(StateFilter(None))
 router.include_router(router_none)
 
 
@@ -169,27 +170,31 @@ async def send_test_description(call : CallbackQuery):
     if status:
         test_id = call.data.split(':')[1]
         test = await Test.filter(id=test_id).first()
-        
-        if len(test.fanlar) > 1:
-            fanlar_nomlari = "📚Fanlar :\n"
-            fanlar_nomlari += "\n".join(f"{i+1}. {fan_nomi}" for i, fan_nomi in enumerate(test.fanlar))
+        if test:
+            if len(test.fanlar) > 1:
+                fanlar_nomlari = "📚Fanlar :\n"
+                fanlar_nomlari += "\n".join(f"{i+1}. {fan_nomi}" for i, fan_nomi in enumerate(test.fanlar))
+            else:
+                fanlar_nomlari = f"📘 Fan nomi : {test.fanlar[0]}"
+            text = f"{fanlar_nomlari}\n\n"
+            
+            if test.tarif:
+                text += f"<i>{test.tarif}</i>\n\n"
+            
+            natija = await Natija.filter(test=test, user__id=call.from_user.id).first()
+            if natija:
+                text += f"\n\nUshbu testni ishlagansiz ❗️\nNatijangiz : {natija.ball} ball ({round(natija.ball/test.umumiy_ball*100, 1)}%)\n\n"
+            
+            text += "Ushbu testni boshlash uchun <code>🟢Testni boshlash</code> tugmasini bosing❗️"
+            
+            await call.message.edit_text(
+                text=text,
+                reply_markup=inline_keyboards.boshlash(test_id)
+            )
         else:
-            fanlar_nomlari = f"📘 Fan nomi : {test.fanlar[0]}"
-        text = f"{fanlar_nomlari}\n\n"
-        
-        if test.tarif:
-            text += f"<i>{test.tarif}</i>\n\n"
-        
-        natija = await Natija.filter(test=test, user__id=call.from_user.id).first()
-        if natija:
-            text += f"\n\nUshbu testni ishlagansiz ❗️\nNatijangiz : {natija.ball} ball ({round(natija.ball/test.umumiy_ball*100, 1)}%)\n\n"
-        
-        text += "Ushbu testni boshlash uchun <code>🟢Testni boshlash</code> tugmasini bosing❗️"
-        
-        await call.message.edit_text(
-            text=text,
-            reply_markup=inline_keyboards.boshlash(test_id)
-        )
+            await call.answer("Ushbu fan topilmadi !", True)
+            await call.message.delete()
+            await call.message.answer("📋Menu :", reply_markup=reply_keyboards.menu)
     
 @router_none.callback_query(F.data.startswith('start_test:'))
 async def send_test(call : CallbackQuery):
@@ -197,25 +202,30 @@ async def send_test(call : CallbackQuery):
     if status:
         test_id = call.data.split(':')[1]
         test = await Test.filter(id=test_id).first()
-        caption = f"⏱️Test uchun berilgan vaqt : {get_pretty_timedelta(seconds=test.duration)}\n\n"
-        now = datetime.datetime.now(pytz.timezone('Asia/Tashkent'))
-        caption += f"🕑Test boshlanish vaqti : {get_pretty_time(now)}\n"\
-            f"🕓Test tugash vaqti : {get_pretty_time(now + datetime.timedelta(seconds=test.duration))}\n\n"
-        
-        if test.owner:
-            caption += f"👨‍🏫Test muallifi : {test.owner}"
-        
-        await call.answer("Test boshlandi 🙋‍♂️", True)
-        await call.message.delete()
-        msg = await call.message.answer_document(
-            test.file,
-            caption=caption,
-            reply_markup=reply_keyboards.menu
-        )
-        await bot.pin_chat_message(msg.chat.id, msg.message_id, disable_notification=True)
-        await Status.create(
-            user_id = call.from_user.id,
-            test = test,
-            fan = (await test.fan),
-            finish_time = now + datetime.timedelta(seconds=test.duration)
-        )
+        if test:
+            caption = f"⏱️Test uchun berilgan vaqt : {get_pretty_timedelta(seconds=test.duration)}\n\n"
+            now = datetime.datetime.now(pytz.timezone('Asia/Tashkent'))
+            caption += f"🕑Test boshlanish vaqti : {get_pretty_time(now)}\n"\
+                f"🕓Test tugash vaqti : {get_pretty_time(now + datetime.timedelta(seconds=test.duration))}\n\n"
+            
+            if test.owner:
+                caption += f"👨‍🏫Test muallifi : <i>{test.owner}</i>"
+            
+            await call.answer("Test boshlandi 🙋‍♂️", True)
+            await call.message.delete()
+            msg = await call.message.answer_document(
+                test.file,
+                caption=caption,
+                reply_markup=reply_keyboards.menu
+            )
+            await bot.pin_chat_message(msg.chat.id, msg.message_id, disable_notification=True)
+            await Status.create(
+                user_id = call.from_user.id,
+                test = test,
+                fan = (await test.fan),
+                finish_time = now + datetime.timedelta(seconds=test.duration)
+            )
+        else:
+            await call.answer("Ushbu fan topilmadi !", True)
+            await call.message.delete()
+            await call.message.answer("📋Menu :", reply_markup=reply_keyboards.menu)

@@ -6,7 +6,7 @@ from aiogram.types import Message, ContentType
 
 from app.data.config import settings
 from app.keyboards.reply import reply_keyboards
-from app.db.models import User, Status, Natija, Fan, Test
+from app.db.models import User, Status, Natija, Test
 from app.utils.enums import UserMenuButtons, UmumiyButtons
 from app.utils.others import get_pretty_time, get_pretty_timedelta, check_answer
 
@@ -14,10 +14,9 @@ from app.utils.others import get_pretty_time, get_pretty_timedelta, check_answer
 
 router = Router()
 
-router = Router()
 router_none = Router()
-router_none.message(StateFilter(None))
-router_none.callback_query(StateFilter(None))
+router_none.message.filter(StateFilter(None))
+router_none.callback_query.filter(StateFilter(None))
 router.include_router(router_none)
 
 
@@ -50,7 +49,10 @@ async def check_answers(msg : Message):
                 fanlar_nomlari += "\n".join(f"{i+1}. {fan_nomi}" for i, fan_nomi in enumerate(test.fanlar))
             else:
                 fanlar_nomlari = f"📘 Fan nomi : {test.fanlar[0]}"
-            text = f"{fanlar_nomlari}\n\n<i>{test.tarif}</i>\n\n"
+            text = f"{fanlar_nomlari}\n\n"
+            
+            if test.tarif:
+                text += f"<i>{test.tarif}</i>\n\n"
 
             text += f"⏱️Test uchun berilgan vaqt : {get_pretty_timedelta(seconds=test.duration)}\n\n"
             now = datetime.datetime.now(pytz.timezone('Asia/Tashkent'))

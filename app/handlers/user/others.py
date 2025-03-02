@@ -14,10 +14,9 @@ from app.utils.enums import UserMenuButtons, UmumiyButtons
 
 router = Router()
 
-router = Router()
 router_none = Router()
-router_none.message(StateFilter(None))
-router_none.callback_query(StateFilter(None))
+router_none.message.filter(StateFilter(None))
+router_none.callback_query.filter(StateFilter(None))
 router.include_router(router_none)
 
 

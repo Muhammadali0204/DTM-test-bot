@@ -13,17 +13,16 @@ from . import javoblarni_tekshirish
 from app.data.config import settings
 from app.utils.enums import UmumiyButtons
 from app.keyboards.reply import reply_keyboards
-from app.keyboards.inline import inline_keyboards
 
 
 
 router = Router()
-router.message(F.chat.type == ChatType.PRIVATE)
-router.callback_query(F.message.chat.type == ChatType.PRIVATE)
+router.message.filter(F.chat.type == ChatType.PRIVATE)
+router.callback_query.filter(F.message.chat.type == ChatType.PRIVATE)
 
 router_none = Router()
-router_none.message(StateFilter(None))
-router_none.callback_query(StateFilter(None))
+router_none.message.filter(StateFilter(None))
+router_none.callback_query.filter(StateFilter(None))
 
 
 router.include_routers(

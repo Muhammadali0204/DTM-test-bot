@@ -1,4 +1,4 @@
-import bcrypt, json
+import bcrypt
 
 from uuid import UUID
 
@@ -121,7 +121,7 @@ async def test_pre_save(sender, instance, using_db, update_fields):
 class Natija(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField('models.User')
-    ball = fields.DecimalField(max_digits=4, decimal_places=2)
+    ball = fields.DecimalField(max_digits=6, decimal_places=2)
     test = fields.ForeignKeyField('models.Test')
     fan = fields.ForeignKeyField('models.Fan')
     

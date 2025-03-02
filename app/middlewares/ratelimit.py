@@ -26,9 +26,6 @@ class ThrottlingMiddlware(BaseMiddleware):
         data: Dict[str, Any]
     ) -> Any:
         user_id = event.from_user.id
-        if user_id in settings.ADMINS:
-            return await handler(event, data)
-        
         key = self._get_storage_key(user_id)
         
         try:

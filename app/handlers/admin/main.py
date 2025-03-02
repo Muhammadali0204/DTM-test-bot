@@ -1,10 +1,12 @@
 from aiogram import F, Router
+from aiogram.types import Message
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, ContentType
+from aiogram.enums.chat_type import ChatType
 
 from . import get_file_id
 from . import send_messages
+from app.data.config import settings
 from app.utils.states import AdminStates
 from app.utils.enums import UmumiyButtons
 from app.keyboards.reply import admin_reply_keys
@@ -12,10 +14,12 @@ from app.keyboards.reply import admin_reply_keys
 
 
 router = Router()
+router.message.filter(F.chat.type == ChatType.PRIVATE, F.from_user.id.in_(settings.ADMINS))
+router.callback_query.filter(F.message.chat.type == ChatType.PRIVATE, F.from_user.id.in_(settings.ADMINS))
 
 router_none = Router()
-router_none.message(StateFilter(None))
-router_none.callback_query(StateFilter(None))
+router_none.message.filter(StateFilter(None))
+router_none.callback_query.filter(StateFilter(None))
 
 router.include_routers(
     router_none,
