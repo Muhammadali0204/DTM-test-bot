@@ -122,9 +122,9 @@ async def check_answer(test: Test, msg: Message, javoblar: str, status: Status):
     await msg.answer(answer)
     
     answer = f"<b>Umumiy ball : {round(umumiy_ball, 1)} ball</b>\n\n"
-    if umumiy_ball / float(test.umumiy_ball) <= 60:
+    if umumiy_ball / float(test.umumiy_ball) <= 0.6:
         answer += MAQTOV[0]
-    elif umumiy_ball / float(test.umumiy_ball) <= 80:
+    elif umumiy_ball / float(test.umumiy_ball) <= 0.8:
         answer += MAQTOV[1]
     else:
         answer += MAQTOV[2]
