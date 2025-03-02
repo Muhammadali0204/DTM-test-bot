@@ -175,7 +175,10 @@ async def send_test_description(call : CallbackQuery):
             fanlar_nomlari += "\n".join(f"{i+1}. {fan_nomi}" for i, fan_nomi in enumerate(test.fanlar))
         else:
             fanlar_nomlari = f"📘 Fan nomi : {test.fanlar[0]}"
-        text = f"{fanlar_nomlari}\n\n<i>{test.tarif}</i>\n\n"
+        text = f"{fanlar_nomlari}\n\n"
+        
+        if test.tarif:
+            text += f"<i>{test.tarif}</i>\n\n"
         
         natija = await Natija.filter(test=test, user__id=call.from_user.id).first()
         if natija:
@@ -197,8 +200,10 @@ async def send_test(call : CallbackQuery):
         caption = f"⏱️Test uchun berilgan vaqt : {get_pretty_timedelta(seconds=test.duration)}\n\n"
         now = datetime.datetime.now(pytz.timezone('Asia/Tashkent'))
         caption += f"🕑Test boshlanish vaqti : {get_pretty_time(now)}\n"\
-            f"🕓Test tugash vaqti : {get_pretty_time(now + datetime.timedelta(seconds=test.duration))}\n\n"\
-                f"👨‍🏫Test muallifi : {test.owner}"
+            f"🕓Test tugash vaqti : {get_pretty_time(now + datetime.timedelta(seconds=test.duration))}\n\n"
+        
+        if test.owner:
+            caption += f"👨‍🏫Test muallifi : {test.owner}"
         
         await call.answer("Test boshlandi 🙋‍♂️", True)
         await call.message.delete()
