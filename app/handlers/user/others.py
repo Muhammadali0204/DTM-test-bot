@@ -21,11 +21,11 @@ router.include_router(router_none)
 
 
 
-@router_none.message(F.text == UserMenuButtons.QOLLANMA)
-async def get_qollanma(msg : Message):
-    await msg.answer(
-        "📝 Qo'llanma ishlab chiqish jarayonida ... "
-    )
+# @router_none.message(F.text == UserMenuButtons.QOLLANMA)
+# async def get_qollanma(msg : Message):
+#     await msg.answer(
+#         "📝 Qo'llanma ishlab chiqish jarayonida ... "
+#     )
 
 @router_none.message(F.text == UserMenuButtons.DOST_TAKLIF)
 async def invite_friend(msg : Message):
@@ -53,6 +53,8 @@ async def ortga(msg : Message, state : FSMContext):
 @router.message(F.text == UmumiyButtons.ISMNI_TAHRIRLASH.value)
 async def edit_name(msg : Message, state : FSMContext):
     user = await User.filter(id = msg.from_user.id).first()
+    if not user:
+        user = await User.create(id=msg.from_user.id, ism=msg.from_user.first_name)
     ism = user.ism if user else msg.from_user.first_name
     await msg.answer(
         f"Hozirda ismingiz : <b>{ism}</b>\n\nYangi ism yuboring : (Belgilar soni : [3:20])",

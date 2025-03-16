@@ -17,7 +17,7 @@ menu = ReplyKeyboardMarkup(
             KeyboardButton(text=UserMenuButtons.DOST_TAKLIF.value),
         ],
         [
-            KeyboardButton(text=UserMenuButtons.QOLLANMA.value),
+            # KeyboardButton(text=UserMenuButtons.QOLLANMA.value),
             KeyboardButton(text=UserMenuButtons.UMUMIY_STATISTIKA.value),
         ],
     ],

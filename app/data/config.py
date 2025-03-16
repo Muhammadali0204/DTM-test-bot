@@ -1,3 +1,5 @@
+import secrets
+
 from pathlib import Path
 from decouple import Config, Csv
 
@@ -25,7 +27,7 @@ class Settings():
     
     WEBHOOK_PATH = config('WEBHOOK_PATH', cast=str)
     
-    WEBHOOK_SECRET_TOKEN = config('WEBHOOK_SECRET_TOKEN', cast=str)
+    WEBHOOK_SECRET_TOKEN = secrets.token_urlsafe(32)
     
     WEBHOOK_URI = WEBHOOK_HOST + WEBHOOK_PATH
     

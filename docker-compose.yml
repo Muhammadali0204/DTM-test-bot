@@ -6,7 +6,7 @@ services:
     container_name: ${BOT_NAME}_app
     restart: always
     ports:
-      - "8003:8000"
+      - "8001:8000"
     depends_on:
       - postgres
       - redis
@@ -27,7 +27,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
     networks:
       - dtmtestbot
 
@@ -40,13 +40,13 @@ services:
     sysctls:
       - net.core.somaxconn=65535
     volumes:
-      - redis-data:/data
+      - redis:/data
     networks:
       - dtmtestbot
 
 volumes:
-  db-data:
-  redis-data:
+  database:
+  redis:
     driver: local
 
 networks:
