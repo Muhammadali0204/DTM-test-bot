@@ -108,7 +108,7 @@ async def check_answer(test: Test, msg: Message, javoblar: str, status: Status):
                 correct_answers += 1
             else:
                 sticker = f"{STICKERS[0]} ({togri_javob.upper()})"
-            current_answer += f"{i}.{berilgan_javoblar[javob_index].upper()} {sticker}  "
+            current_answer += f"{i}. {berilgan_javoblar[javob_index].upper()} {sticker}  "
             i += 1
             if javob_index % 5 == 4:
                 current_answer += "\n"
