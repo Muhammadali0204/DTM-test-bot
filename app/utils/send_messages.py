@@ -6,7 +6,7 @@ from aiogram import Bot
 from aiogram.types import Message
 from aiogram.types import InputMediaAnimation, InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo
 
-from app.data.config import settings
+from app.db.models import User
 from app.utils.enums import MessageType
 from app.keyboards.inline import inline_keyboards, admin_inline_keyboards
 
@@ -91,7 +91,8 @@ async def send_message_to_users(
                     n += 1
                     await asyncio.sleep(0.04)
                 except :
-                    pass
+                    await User.filter(id=user).delete()
+                    print(f"{user} o'chirildi !")
                 if (idx + 1) % 100 == 0:
                     await oraliq_xabar(
                         idx, n, bot, admin
@@ -154,7 +155,8 @@ async def send_message_to_users(
                     i += 1
                     await asyncio.sleep(0.04)
                 except :
-                    pass
+                    await User.filter(id=user).delete()
+                    print(f"{user} o'chirildi !")
                 if (idx + 1) % 100 == 0:
                     await oraliq_xabar(
                         idx, n, bot, admin
@@ -173,7 +175,7 @@ async def stop_sending(idx, n, bot : Bot, admin):
         )
     except :
         pass
-    
+
 async def end_sending(idx, n, bot : Bot, admin):
     try :
         await bot.send_message(
