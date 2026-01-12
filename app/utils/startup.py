@@ -44,6 +44,7 @@ async def create_super_user():
     
 async def shutdown(redis : Redis):
     await redis.aclose()
+    await bot.delete_webhook(True)
     for admin in settings.ADMINS:
         try :
             await bot.send_message(admin, "<b>Bot o'chdi !</b>")
