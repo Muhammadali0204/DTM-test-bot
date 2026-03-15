@@ -11,14 +11,12 @@ from app.utils.enums import UserMenuButtons, UmumiyButtons
 from app.utils.others import get_pretty_time, get_pretty_timedelta, check_answer
 
 
-
 router = Router()
 
 router_none = Router()
 router_none.message.filter(StateFilter(None))
 router_none.callback_query.filter(StateFilter(None))
 router.include_router(router_none)
-
 
 
 @router_none.message(F.text == UserMenuButtons.JAVOBLARNI_TEKSHIRISH)
@@ -66,19 +64,17 @@ async def check_answers(msg : Message):
                     f"https://{settings.WEBHOOK_HOST}/answer?test_id={test.id}"
                 )
             )
-    elif user is None:
-        await User.create(
-            id=msg.from_user.id,
-            ism=msg.from_user.first_name
-        )
-        await msg.answer(
-            "Hozirda sizda hech qanday faol test mavjud emas 🙁"
-        )
     else:
         await msg.answer(
             "Hozirda sizda hech qanday faol test mavjud emas 🙁"
         )
-        
+        if not user:
+            await User.create(
+                id=msg.from_user.id,
+                ism=msg.from_user.first_name
+            )
+
+
 @router_none.message(F.content_type == ContentType.WEB_APP_DATA)
 async def web_app_data(msg : Message):
     web_app_data = msg.web_app_data
@@ -118,4 +114,3 @@ async def web_app_data(msg : Message):
             
             return
         await msg.answer("Ma'lumotlar mavjud emas !", reply_markup=reply_keyboards.menu)
-

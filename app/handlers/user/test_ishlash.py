@@ -1,6 +1,6 @@
 import pytz, datetime
 
-from aiogram import types, Router, F
+from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -8,7 +8,6 @@ from aiogram.types import Message, CallbackQuery
 from tortoise.expressions import Subquery, Case, When, Q
 
 from app.loader import bot
-from app.data.config import settings
 from app.keyboards.reply import reply_keyboards
 from app.utils.states import TestIshlash
 from app.keyboards.inline import inline_keyboards
@@ -25,9 +24,9 @@ router_none.callback_query.filter(StateFilter(None))
 router.include_router(router_none)
 
 
-
 async def show_menu(message : Message):
     await message.answer("📋Menu :", reply_markup=reply_keyboards.menu) 
+
 
 @router_none.message(F.text == UserMenuButtons.TEST_ISHLASH)
 async def test_ishlash(msg : Message, state : FSMContext):
@@ -42,7 +41,8 @@ async def test_ishlash(msg : Message, state : FSMContext):
     user = await User.filter(id=msg.from_user.id).first()
     if user is None:
         await User.create(msg.from_user.id, msg.from_user.first_name)
-    
+
+
 @router.message(TestIshlash.test_turi)
 async def test_tur(msg : Message, state : FSMContext):
     status = await check_status(msg=msg)
@@ -86,7 +86,8 @@ async def test_tur(msg : Message, state : FSMContext):
             )
     else:
         await state.clear()
-        
+
+
 @router_none.callback_query(F.data.startswith('fanlarga:'))
 async def to_subjects(call : CallbackQuery):
     tur = call.data.split(':')[1]
@@ -103,7 +104,8 @@ async def to_subjects(call : CallbackQuery):
             "Quyidagi fanlardan birini tanlang :",
             reply_markup=inline_keyboards.fanlar_list(fanlar)
         )
-        
+
+
 @router_none.callback_query(F.data.startswith('fan:'))
 async def send_tests(call : CallbackQuery):
     status = await check_status(call=call)
@@ -142,7 +144,8 @@ async def send_tests(call : CallbackQuery):
             await call.answer("Ushbu fan topilmadi !", True)
             await call.message.delete()
             await call.message.answer("📋Menu :", reply_markup=reply_keyboards.menu)
-            
+
+
 async def send_tests_msg(msg : Message):
     status = await check_status(msg=msg)
     if status:
@@ -163,7 +166,7 @@ async def send_tests_msg(msg : Message):
             reply_markup=inline_keyboards.testlar_list(testlar, None)
         )
 
-        
+
 @router_none.callback_query(F.data.startswith('test:'))
 async def send_test_description(call : CallbackQuery):
     status = await check_status(call=call)
@@ -183,10 +186,9 @@ async def send_test_description(call : CallbackQuery):
             
             natija = await Natija.filter(test=test, user__id=call.from_user.id).first()
             if natija:
-                text += f"\n\nUshbu testni ishlagansiz ❗️\nNatijangiz : {natija.ball} ball ({round(natija.ball/test.umumiy_ball*100, 1)}%)\n\n"
-            
+                text += f"Ushbu testni ishlagansiz ❗️\nNatijangiz : {natija.ball} ball ({round(natija.ball/test.umumiy_ball*100, 1)}%)\n\n"
             text += "Ushbu testni boshlash uchun <code>🟢Testni boshlash</code> tugmasini bosing❗️"
-            
+
             await call.message.edit_text(
                 text=text,
                 reply_markup=inline_keyboards.boshlash(test_id)
@@ -195,7 +197,8 @@ async def send_test_description(call : CallbackQuery):
             await call.answer("Ushbu fan topilmadi !", True)
             await call.message.delete()
             await call.message.answer("📋Menu :", reply_markup=reply_keyboards.menu)
-    
+
+
 @router_none.callback_query(F.data.startswith('start_test:'))
 async def send_test(call : CallbackQuery):
     status = await check_status(call=call)
@@ -207,10 +210,10 @@ async def send_test(call : CallbackQuery):
             now = datetime.datetime.now(pytz.timezone('Asia/Tashkent'))
             caption += f"🕑Test boshlanish vaqti : {get_pretty_time(now)}\n"\
                 f"🕓Test tugash vaqti : {get_pretty_time(now + datetime.timedelta(seconds=test.duration))}\n\n"
-            
+
             if test.owner:
                 caption += f"👨‍🏫Test muallifi : <i>{test.owner}</i>"
-            
+
             await call.answer("Test boshlandi 🙋‍♂️", True)
             await call.message.delete()
             msg = await call.message.answer_document(
@@ -218,7 +221,7 @@ async def send_test(call : CallbackQuery):
                 caption=caption,
                 reply_markup=reply_keyboards.menu
             )
-            await bot.pin_chat_message(msg.chat.id, msg.message_id, disable_notification=True)
+            chat_msg = await bot.pin_chat_message(msg.chat.id, msg.message_id, disable_notification=True)
             await Status.create(
                 user_id = call.from_user.id,
                 test = test,

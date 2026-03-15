@@ -62,7 +62,7 @@ STICKERS = [
 ]
 
 MAQTOV = [
-    "Natijangiz yaxshi, o'z ustingizda ishlashda savom eting 😊", # 0-60
+    "Natijangiz yaxshi, o‘z ustingizda ishlashda davom eting 😊", # 0-60
     "Natijangiz juda yaxshi, tabriklayman 👍", # 61 - 80
     "Qoyilmaqom natija 👏, kelgusi ishlaringizda doimo omad tilayman 😊" # 81 - 100
 ]

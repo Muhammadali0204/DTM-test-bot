@@ -1,12 +1,7 @@
-import datetime
-
 from redis.asyncio import Redis
 from aiogram.types import Message
 from aiogram import BaseMiddleware
 from typing import Callable, Dict, Any
-
-from app.data.config import settings
-
 
 
 class ThrottlingMiddlware(BaseMiddleware):
@@ -15,7 +10,7 @@ class ThrottlingMiddlware(BaseMiddleware):
         self.storage = storage
         self.limit = limit
         self.key_prefix = key_prefix
-        
+
     def _get_storage_key(self, user_id: int) -> str:
         return f"{self.key_prefix}:{user_id}"
 
@@ -30,10 +25,8 @@ class ThrottlingMiddlware(BaseMiddleware):
         
         try:
             user_data = await self.storage.get(key)
-            if user_data is None:
-                await self.storage.set(key, '1', ex=self.limit)
-            else:
-                await self.storage.set(key, '1', ex=self.limit)
+            await self.storage.set(key, '1', ex=self.limit)
+            if user_data:
                 await event.answer(
                     "<b>Botdan sekinroq foydalaning !</b>"
                 )

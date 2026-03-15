@@ -1,78 +1,294 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Javoblarni kiritish</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="data:,">
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/answer.css') }}">
 </head>
+
 <body>
-
-<div class="container mt-5 m-auto">
-    {% set ns = namespace(counter=0) %}
-    {% for fan in data %}
-        <h2 class="text-center">{{ fan.fan }}</h2>
-        <div class="row mt-5">
-            {% for char in fan.javoblar %}
-                {% set ns.counter = ns.counter + 1 %}
-                <div class="col-3 col-sm-2 col-md-1 mb-3">
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="{{ns.counter}}" name="javob-{{ns.counter}}" placeholder="">
-                        <label for="javob{{ns.counter}}">{{ns.counter}}</label>
-                    </div>
-                </div>
-            {% endfor %}
-            <hr>
+    <div class="container">
+        <div class="page-title-wrap">
+            <h1>Javoblaringizni kiriting</h1>
+            <p>Har bir savol uchun faqat <b>a</b>, <b>b</b>, <b>c</b> yoki <b>d</b> harfini kiriting.</p>
         </div>
-    {% endfor %}
-    <div class="text-center m-5">
-        <button class="btn btn-danger" id="cancel">Yopish</button>
-        <button class="btn btn-info" type="submit" id="submit">Yuborish</button>
+
+        {% set ns = namespace(counter=0) %}
+
+        {% for fan in data %}
+        <section class="subject-card" data-subject>
+            <div class="subject-top">
+                <h2 class="subject-title">{{ fan.fan }}</h2>
+                <div class="subject-meta">
+                    <span class="pill total">{{ fan.javoblar|length }} ta savol</span>
+                    <span class="pill done">
+                        <span class="subject-done">0</span>/{{ fan.javoblar|length }} tayyor
+                    </span>
+                </div>
+            </div>
+
+            <div class="answers-grid">
+                {% for char in fan.javoblar %}
+                {% set ns.counter = ns.counter + 1 %}
+                <div class="answer-item">
+                    <label class="answer-label" for="javob-{{ ns.counter }}">{{ ns.counter }}</label>
+                    <input type="text" class="answer-input" id="javob-{{ ns.counter }}" name="javob-{{ ns.counter }}"
+                        maxlength="1" autocomplete="off" spellcheck="false" inputmode="text" placeholder="?" />
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+        <input type="hidden" value="{{ test_id }}" id="test_id">
     </div>
-    <input type="hidden" value={{test_id}} id="test_id">
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <div class="footer-bar">
+        <div class="footer-inner">
+            <div class="footer-status">
+                <div class="title" id="footerTitle">Javoblarni tekshirib yuboring</div>
+                <div class="desc" id="footerDesc">Barcha maydonlar to‘ldirilishi kerak</div>
+            </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        const btn = document.getElementById("submit");
-        btn.addEventListener("click",
-        () => {
-            let inputs = document.querySelectorAll(".form-control");
-            let values = [];
-            let errors = [];
-            
-            inputs.forEach(input => {
-                if (['a', 'b', 'c', 'd'].includes(input.value.toLowerCase())){
-                    values.push(input.value.toLowerCase());
-                }
-                else {
-                    errors.push(input.id);
-                }
-            });
-            if (errors.length > 0){
-                tg.showAlert(`Javoblar bo'sh bo'lmasligi va faqatgina a, b, c, d harflardan iborat bo'lishi kerak !\nUshbu javoblarda xatolik : ${errors.slice(0, 10).join(', ')} ...`);
-            }else {
-                const test_input = document.getElementById('test_id');
-                const data = {
-                    "test_id": test_input.value,
-                    "javoblar": values
-                };
-                tg.sendData(JSON.stringify(data));
-                tg.close();
+            <div class="footer-actions">
+                <button class="btn btn-cancel" id="cancel" type="button">Yopish</button>
+                <button class="btn btn-submit" id="submit" type="button">Yuborish</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+
+            const allowed = ["a", "b", "c", "d"];
+            const inputs = Array.from(document.querySelectorAll(".answer-input"));
+            const subjectCards = Array.from(document.querySelectorAll("[data-subject]"));
+
+            const submitBtn = document.getElementById("submit");
+            const cancelBtn = document.getElementById("cancel");
+            const testInput = document.getElementById("test_id");
+
+            const footerTitle = document.getElementById("footerTitle");
+            const footerDesc = document.getElementById("footerDesc");
+            const footerBar = document.querySelector(".footer-bar");
+
+            function sanitize(value) {
+                return (value || "")
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[^a-z]/g, "")
+                    .slice(0, 1);
             }
+
+            function validateInput(input) {
+                const value = sanitize(input.value);
+                input.value = value;
+
+                input.classList.remove("valid", "invalid");
+
+                if (!value) return "empty";
+
+                if (allowed.includes(value)) {
+                    input.classList.add("valid");
+                    return "valid";
+                }
+
+                input.classList.add("invalid");
+                return "invalid";
+            }
+
+            function updateSubjectStats() {
+                subjectCards.forEach(card => {
+                    const cardInputs = Array.from(card.querySelectorAll(".answer-input"));
+                    const doneEl = card.querySelector(".subject-done");
+                    const validCount = cardInputs.filter(input => allowed.includes(sanitize(input.value))).length;
+                    doneEl.textContent = validCount;
+                });
+            }
+
+            function updateGlobalStats() {
+                let valid = 0;
+                let empty = 0;
+                let invalid = 0;
+
+                inputs.forEach(input => {
+                    const state = validateInput(input);
+                    if (state === "valid") valid++;
+                    else if (state === "empty") empty++;
+                    else invalid++;
+                });
+
+                if (invalid > 0) {
+                    footerTitle.textContent = `${invalid} ta xato javob bor`;
+                    footerDesc.textContent = `Faqat a, b, c, d kiritilishi kerak`;
+                } else if (empty > 0) {
+                    footerTitle.textContent = `Yana ${empty} ta javob qoldi`;
+                    footerDesc.textContent = `Barchasini to‘ldirib, keyin yuboring`;
+                } else {
+                    footerTitle.textContent = `Barcha javoblar kiritildi`;
+                    footerDesc.textContent = `Javoblaringizni yuborishingiz mumkin`;
+                }
+
+                updateSubjectStats();
+            }
+
+            function scrollIntoViewSafe(input) {
+                const footerHeight = footerBar ? footerBar.offsetHeight : 90;
+                const rect = input.getBoundingClientRect();
+
+                const hiddenByFooter = rect.bottom > (window.innerHeight - footerHeight - 12);
+                const hiddenTop = rect.top < 12;
+
+                if (hiddenByFooter || hiddenTop) {
+                    input.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                        inline: "nearest"
+                    });
+                }
+            }
+
+            function focusNext(index) {
+                if (index < inputs.length - 1) {
+                    const next = inputs[index + 1];
+                    next.focus();
+                    next.select();
+
+                    setTimeout(() => {
+                        scrollIntoViewSafe(next);
+                    }, 50);
+                }
+            }
+
+            function focusPrev(index) {
+                if (index > 0) {
+                    const prev = inputs[index - 1];
+                    prev.focus();
+                    prev.select();
+
+                    setTimeout(() => {
+                        scrollIntoViewSafe(prev);
+                    }, 50);
+                }
+            }
+
+            inputs.forEach((input, index) => {
+                input.addEventListener("input", function () {
+                    input.value = sanitize(input.value);
+                    validateInput(input);
+                    updateGlobalStats();
+
+                    if (allowed.includes(input.value)) {
+                        focusNext(index);
+                    }
+                });
+
+                input.addEventListener("focus", function () {
+                    input.select();
+                    setTimeout(() => {
+                        scrollIntoViewSafe(input);
+                    }, 50);
+                });
+
+                input.addEventListener("keydown", function (e) {
+                    if (e.key === "Backspace" && input.value === "") {
+                        focusPrev(index);
+                    }
+
+                    if (e.key === "ArrowRight" || e.key === "Enter") {
+                        e.preventDefault();
+                        focusNext(index);
+                    }
+
+                    if (e.key === "ArrowLeft") {
+                        e.preventDefault();
+                        focusPrev(index);
+                    }
+                });
+
+                input.addEventListener("paste", function (e) {
+                    e.preventDefault();
+
+                    const pastedText = (e.clipboardData || window.clipboardData).getData("text") || "";
+                    const chars = pastedText
+                        .toLowerCase()
+                        .replace(/\s+/g, "")
+                        .split("")
+                        .filter(ch => allowed.includes(ch));
+
+                    if (!chars.length) return;
+
+                    let currentIndex = index;
+
+                    chars.forEach(ch => {
+                        if (currentIndex < inputs.length) {
+                            inputs[currentIndex].value = ch;
+                            validateInput(inputs[currentIndex]);
+                            currentIndex++;
+                        }
+                    });
+
+                    if (currentIndex < inputs.length) {
+                        inputs[currentIndex].focus();
+                        setTimeout(() => {
+                            scrollIntoViewSafe(inputs[currentIndex]);
+                        }, 50);
+                    } else {
+                        inputs[inputs.length - 1].focus();
+                        setTimeout(() => {
+                            scrollIntoViewSafe(inputs[inputs.length - 1]);
+                        }, 50);
+                    }
+
+                    updateGlobalStats();
+                });
+            });
+
+            submitBtn.addEventListener("click", function () {
+                const values = [];
+                const errors = [];
+
+                inputs.forEach(input => {
+                    const value = sanitize(input.value);
+                    if (allowed.includes(value)) {
+                        values.push(value);
+                    } else {
+                        errors.push(input.id.replace("javob-", ""));
+                        input.classList.add("invalid");
+                    }
+                });
+
+                updateGlobalStats();
+
+                if (errors.length > 0) {
+                    tg.showAlert(
+                        `Javoblar bo‘sh bo‘lmasligi va faqat a, b, c, d bo‘lishi kerak.\n\nXatolik bor savollar: ${errors.slice(0, 15).join(", ")}${errors.length > 15 ? " ..." : ""}`
+                    );
+                    return;
+                }
+
+                const payload = {
+                    test_id: testInput.value,
+                    javoblar: values
+                };
+
+                tg.sendData(JSON.stringify(payload));
+                tg.close();
+            });
+
+            cancelBtn.addEventListener("click", function () {
+                tg.close();
+            });
+
+            updateGlobalStats();
         });
-
-        const close_btn = document.getElementById('cancel').addEventListener('click', () => {
-            tg.close();
-        })
-    })
-</script>
-
+    </script>
 </body>
+
 </html>

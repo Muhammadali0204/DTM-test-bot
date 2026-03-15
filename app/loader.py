@@ -12,5 +12,5 @@ from app.data.config import settings
 bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 storage = RedisStorage.from_url(settings.REDIS_URL)
 dp = Dispatcher(storage=storage, bot=bot)
-redis : Redis= None
+redis : Redis= Redis.from_url(settings.REDIS_URL)
 temp_data = {}

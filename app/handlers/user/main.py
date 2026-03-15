@@ -15,7 +15,6 @@ from app.utils.enums import UmumiyButtons
 from app.keyboards.reply import reply_keyboards
 
 
-
 router = Router()
 router.message.filter(F.chat.type == ChatType.PRIVATE)
 router.callback_query.filter(F.message.chat.type == ChatType.PRIVATE)
@@ -33,16 +32,17 @@ router.include_routers(
 )
 
 
-
 async def show_menu(message : Message):
     await message.answer("📋Menu :", reply_markup=reply_keyboards.menu)
+
 
 @router_none.message(F.text == UmumiyButtons.ORTGA.value)
 @router.message(F.text == "/menu")
 async def menu(msg : Message, state : FSMContext):
     await state.clear()
     await show_menu(msg)
-    
+
+
 @router_none.message(CommandStart())
 async def start(msg : Message, state : FSMContext):
     if (await User.filter(id=msg.from_user.id).exists()):
@@ -65,6 +65,7 @@ async def start(msg : Message, state : FSMContext):
             except:
                 pass
 
+
 @router.message(SignUp.ism_yuborish)
 async def get_name(msg : Message, state : FSMContext):
     ism = msg.text
@@ -81,7 +82,8 @@ async def get_name(msg : Message, state : FSMContext):
         await msg.answer(
             "Belgilar soni [3:20] oralig'ida bo'lishi kerak !\nQayta yuboring :"
         )
-        
+
+
 @router.callback_query(F.data == "yopish")
 async def menu(call : CallbackQuery):
     await call.answer("Yopildi ✅")

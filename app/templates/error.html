@@ -1,17 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xatolik</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xatolik</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/error.css') }}" />
 </head>
+
 <body>
-  <div >
-    <div style="text-align: center">
-      <img src="{{ url_for('static', path='error.jpg') }}" alt="ERROR" style="height: 128px">
+  <div class="error-card">
+    <div class="image-wrap">
+      <img src="{{ url_for('static', path='images/error.jpg') }}" alt="Xatolik rasmi">
     </div>
-    <h2 style="text-align: center">{{ message }}</h2>
+
+    <div class="badge">Xatolik yuz berdi</div>
+
+    <h1 class="title">Nimadir noto‘g‘ri ketdi</h1>
+    <p class="message">{{ message }}</p>
   </div>
-  </script>
+  </div>
 </body>
+
 </html>
